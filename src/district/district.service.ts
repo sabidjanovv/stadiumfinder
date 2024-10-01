@@ -16,7 +16,10 @@ export class DistrictService {
   }
 
   findOne(id: number) {
-    return this.districtModel.findByPk(id);
+    return this.districtModel.findOne({
+      where: { id },
+      include: { all: true },
+    });
   }
 
   async update(id: number, updateDistrictDto: UpdateDistrictDto): Promise<District> {

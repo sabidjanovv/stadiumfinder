@@ -16,7 +16,10 @@ export class CategoriesService {
   }
 
   findOne(id: number) {
-    return this.categoryModel.findByPk(id);
+    return this.categoryModel.findOne({
+      where: { id },
+      include: { all: true },
+    });
   }
 
   async update(id: number, updateCategoryDto: UpdateCategoryDto): Promise<Category> {

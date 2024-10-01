@@ -16,7 +16,10 @@ export class ComfortService {
   }
 
   findOne(id: number) {
-    return this.comfortModel.findByPk(id);
+    return this.comfortModel.findOne({
+      where: { id },
+      include: { all: true },
+    });
   }
 
   async update(

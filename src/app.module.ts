@@ -11,6 +11,13 @@ import { District } from './district/models/district.model';
 import { Region } from './region/models/region.model';
 import { CategoriesModule } from './categories/categories.module';
 import { Category } from './categories/models/category.model';
+import { UsersModule } from './users/users.module';
+import { User } from './users/models/user.model';
+import { MailModule } from './mail/mail.module';
+import { UserCardsModule } from './user_cards/user_cards.module';
+import { UserCard } from './user_cards/models/user_card.model';
+import { UserWalletModule } from './user_wallet/user_wallet.module';
+import { UserWallet } from './user_wallet/models/user_wallet.model';
 
 @Module({
   imports: [
@@ -29,7 +36,10 @@ import { Category } from './categories/models/category.model';
         Comfort,
         District,
         Region,
-        Category
+        Category,
+        User,
+        UserCard,
+        UserWallet
       ],
       autoLoadModels: true,
       sync: { alter: true },
@@ -39,6 +49,10 @@ import { Category } from './categories/models/category.model';
     DistrictModule,
     RegionModule,
     CategoriesModule,
+    UsersModule,
+    MailModule,
+    UserCardsModule,
+    UserWalletModule,
   ],
   controllers: [],
   providers: [],

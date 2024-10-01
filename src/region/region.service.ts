@@ -16,7 +16,10 @@ export class RegionService {
   }
 
   findOne(id: number) {
-    return this.regionModel.findByPk(id);
+    return this.regionModel.findOne({
+      where: { id },
+      include: { all: true },
+    });
   }
 
   async update(id: number, updateRegionDto: UpdateRegionDto): Promise<Region> {
