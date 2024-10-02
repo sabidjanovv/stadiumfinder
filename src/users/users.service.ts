@@ -164,6 +164,10 @@ export class UsersService {
       where: { email },
     });
 
+    if(!user.is_active){
+      throw new UnauthorizedException("Foydalanuvchi faollashtirilmagan");
+    }
+
     if (!user) {
       throw new UnauthorizedException("Foydalanuvchi topilmadi");
     }
