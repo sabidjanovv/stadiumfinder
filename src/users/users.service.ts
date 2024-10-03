@@ -65,7 +65,7 @@ export class UsersService {
         throw new UnauthorizedException("Unauthorized token");
       }
       if (id != verified_token.id) {
-        throw new ForbiddenException("Forbidden admin");
+        throw new ForbiddenException("Forbidden user");
       }
       const payload = { id: verified_token.id, role: verified_token.role };
       const token = this.jwtService.sign(payload, {

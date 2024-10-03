@@ -18,9 +18,24 @@ import { UserCardsModule } from './user_cards/user_cards.module';
 import { UserCard } from './user_cards/models/user_card.model';
 import { UserWalletModule } from './user_wallet/user_wallet.module';
 import { UserWallet } from './user_wallet/models/user_wallet.model';
+import { BotModule } from './bot/bot.module';
+import { TelegrafModule } from 'nestjs-telegraf';
+import { BOT_NAME } from './app.constants';
+import { Admin } from './admin/models/admin.model';
+import { AdminModule } from './admin/admin.module';
+import { Bot } from './bot/models/bot.model';
+import { Address } from './bot/models/address.model';
 
 @Module({
   imports: [
+    TelegrafModule.forRootAsync({
+      botName: BOT_NAME,
+      useFactory:()=>({
+        token: process.env.BOT_TOKEN,
+        include:[BotModule],
+        middlewares:[]
+      })
+    }),
     ConfigModule.forRoot({ envFilePath: ".env", isGlobal: true }),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, "static"),
@@ -39,7 +54,10 @@ import { UserWallet } from './user_wallet/models/user_wallet.model';
         Category,
         User,
         UserCard,
-        UserWallet
+        UserWallet,
+        Admin,
+        Bot,
+        Address
       ],
       autoLoadModels: true,
       sync: { alter: true },
@@ -53,6 +71,8 @@ import { UserWallet } from './user_wallet/models/user_wallet.model';
     MailModule,
     UserCardsModule,
     UserWalletModule,
+    BotModule,
+    AdminModule,
   ],
   controllers: [],
   providers: [],
