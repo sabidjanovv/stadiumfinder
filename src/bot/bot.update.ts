@@ -46,6 +46,26 @@ export class BotUpdate {
     await this.botService.onClickLocation(ctx);
   }
 
+  @Command("car")
+  async onCar(@Ctx() ctx: Context) {
+    await this.botService.onCar(ctx);
+  }
+
+  @Hears("Yangi avtomobil qo'shish")
+  async addNewCar(@Ctx() ctx: Context) {
+    await this.botService.addNewCar(ctx);
+  }
+
+  @Hears("Mening avtomobillarim")
+  async showCars(@Ctx() ctx: Context) {
+    await this.botService.showCars(ctx);
+  }
+
+  // @On("text")
+  // async onTextCar(@Ctx() ctx: Context) {
+  //   await this.botService.onTextCar(ctx);
+  // }
+
   @On("text")
   async onText(@Ctx() ctx: Context) {
     await this.botService.onText(ctx);

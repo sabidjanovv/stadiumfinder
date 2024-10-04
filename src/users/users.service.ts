@@ -17,12 +17,21 @@ import { Response, Request } from "express";
 import { MailService } from "../mail/mail.service";
 import { SignInDto } from "./dto/signin.dto";
 
+import * as otpGenerator from "otp-generator";
+import { PhoneUserDto } from "./dto/phone-user.dto";
+import { BotService } from "../bot/bot.service";
+import { Otp } from "../otp/models/otp.model";
+import { AddMinutesToDate } from "../helpers/addMinutes";
+import { encode } from "../helpers/crypto";
+
 @Injectable()
 export class UsersService {
   constructor(
     @InjectModel(User) private userModel: typeof User,
+    @InjectModel(Otp) private otpModel: typeof Otp,
     private readonly jwtService: JwtService,
-    private readonly mailService: MailService
+    private readonly mailService: MailService,
+    private readonly botService: BotService
   ) {}
 
   async generateToken(user: User) {
@@ -78,6 +87,40 @@ export class UsersService {
     } catch (error) {
       throw new InternalServerErrorException(error);
     }
+  }
+
+  async newOtp(phoneUserDto:PhoneUserDto){
+    const phone_number = phoneUserDto.phone;
+
+    const otp = otpGenerator.generate(4, {
+      upperCaseAlphabets: false,
+      lowerCaseAlphabets: false,
+      specialChars:false
+    });
+    const isSend = await this.botService.sendOtp(phone_number, otp);
+
+    if(!isSend){
+      throw new BadRequestException("Avval botdan ro'yxattan o'ting")
+    }
+
+    const now = new Date()
+    const expiration_time = AddMinutesToDate(now, 5);
+    await this.otpModel.destroy({where:{phone_number}});
+
+    const newOtp = await this.otpModel.create({
+      id:uuid.v4(),
+      otp,
+      expiration_time,
+      phone_number,
+    })
+    const details ={
+      timestamp: now,
+      phone_number,
+      otp_id: newOtp.id,
+    }
+    const encodedData = await encode(JSON.stringify(details))
+
+    return {message:"OTP telegramga yuborildi", details:encodedData}
   }
 
   async signUp(createUserDto: CreateUserDto, res: Response) {

@@ -20,6 +20,7 @@ import { CookieGetter } from "../decorators/cookieGetter.decorator";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { User } from "./models/user.model";
 import { UserGuard } from "../guards/user.guard";
+import { PhoneUserDto } from "./dto/phone-user.dto";
 
 
 
@@ -55,6 +56,12 @@ export class UsersController {
   ) {
     return this.usersService.signIn(signInDto, res);
   }
+
+  @Post("newotp")
+  newOtp(
+    @Body() phoneUserDto:PhoneUserDto) {
+      return this.usersService.newOtp(phoneUserDto)
+    }
 
   @ApiOperation({ summary: "User tizimdan chiqishi" })
   @ApiResponse({

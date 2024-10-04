@@ -7,6 +7,7 @@ import { InjectBot } from "nestjs-telegraf";
 import { BOT_NAME } from "../app.constants";
 import { Context, Telegraf, Markup } from "telegraf";
 import { Address } from "./models/address.model";
+import { Car } from "./models/car.model";
 
 @Injectable()
 export class BotService {
@@ -113,6 +114,7 @@ export class BotService {
         { status: false, phone_number: null },
         { where: { user_id: userId } }
       );
+      await this.bot.telegram.sendChatAction(user.user_id, "typing");
       await ctx.reply(`Siz botdan chiqdingiz`, {
         parse_mode: "HTML",
         ...Markup.removeKeyboard(),
@@ -167,7 +169,7 @@ export class BotService {
           where:{user_id:userId},
           order: [['id', 'DESC']]
         });
-        if(address){
+        if (address) {
           if (address.last_state == "address_name") {
             address.address_name = ctx.message.text;
             address.last_state = "address";
@@ -177,16 +179,58 @@ export class BotService {
               ...Markup.removeKeyboard(),
             });
           } else if (address.last_state == "address") {
-              address.address = ctx.message.text;
-              address.last_state = "location";
-              await address.save();
-              await ctx.reply(`Manzilingiz lokatsiyasini yuboring:`, {
-                parse_mode: "HTML",
-                ...Markup.keyboard([
-                  [Markup.button.locationRequest("Lokatsiyani yuborish")]
-                ]).resize().oneTime(),
-              });
+            address.address = ctx.message.text;
+            address.last_state = "location";
+            await address.save();
+            await ctx.reply(`Manzilingiz lokatsiyasini yuboring:`, {
+              parse_mode: "HTML",
+              ...Markup.keyboard([
+                [Markup.button.locationRequest("Lokatsiyani yuborish")],
+              ])
+                .resize()
+                .oneTime(),
+            });
           }
+        }
+          const car = await Car.findOne({
+            where: { user_id: userId },
+            order: [["id", "DESC"]],
+          });
+          if (car) {
+            if (car.last_enter == "car_number") {
+              car.car_number = ctx.message.text;
+              car.last_enter = "model";
+              await car.save();
+              await ctx.reply(`Avtomobil modelini kiriting:`, {
+                parse_mode: "HTML",
+                ...Markup.removeKeyboard(),
+              });
+            } else if (car.last_enter == "model") {
+              car.model = ctx.message.text;
+              car.last_enter = "color";
+              await car.save();
+              await ctx.reply(`Avtomobil rangini kiriting:`, {
+                parse_mode: "HTML",
+                ...Markup.removeKeyboard(),
+              });
+            } else if (car.last_enter == "color") {
+              car.color = ctx.message.text;
+              car.last_enter = "year";
+              await car.save();
+              await ctx.reply(`Avtomobil yilini kiriting:`, {
+                parse_mode: "HTML",
+                ...Markup.removeKeyboard(),
+              });
+            } else {
+              car.year = ctx.message.text;
+              car.last_enter = "finish";
+              await car.save();
+              await ctx.reply(`Avtomobil qo'shildi`, {
+                parse_mode: "HTML",
+                ...Markup.removeKeyboard(),
+              });
+            }
+
         }
       }
     }
@@ -264,5 +308,84 @@ export class BotService {
     } catch (error) {
       
     }
+  }
+
+  async onCar(ctx: Context){
+    await ctx.reply(`Avtomobillarim:`, {
+      parse_mode: "HTML",
+      ...Markup.keyboard([
+        ["Mening avtomobillarim", "Yangi avtomobil qo'shish"],
+      ]).resize(),
+    });
+  }
+
+  async addNewCar(ctx: Context){
+    const userId = ctx.from.id;
+    const user = await this.botModel.findByPk(userId);
+    if (!user) {
+      await ctx.reply(`Siz avval ro'yxattan o'tmagansiz`, {
+        parse_mode: "HTML",
+        ...Markup.keyboard([["/start"]])
+          .resize()
+          .oneTime(),
+      });
+    } else {
+      await Car.create({
+        user_id: userId,
+        last_enter:"car_number"
+      });
+      await ctx.reply(`Avtomobil raqamini kiriting:`, {
+        parse_mode: "HTML",
+        ...Markup.removeKeyboard(),
+      });
+    }
+  }
+
+  // async onTextCar(ctx: Context){
+  //   if ("text" in ctx.message) {
+  //     const userId = ctx.from.id;
+  //     const user = await this.botModel.findByPk(userId);
+  //     if (!user) {
+  //       await ctx.reply(`Siz avval ro'yxattan o'tmagansiz`, {
+  //         parse_mode: "HTML",
+  //         ...Markup.keyboard([["/start"]])
+  //           .resize()
+  //           .oneTime(),
+  //       });
+  //     } 
+  //   }
+  // }
+
+  async showCars(ctx: Context) {
+    const userId = ctx.from.id;
+    const user = await this.botModel.findByPk(userId);
+    if (!user) {
+      await ctx.reply(`Siz avval ro'yxattan o'tmagansiz`, {
+        parse_mode: "HTML",
+        ...Markup.keyboard([["/start"]])
+          .resize()
+          .oneTime(),
+      });
+    } else{
+      const cars = await Car.findAll({ where: { user_id: userId } });
+      cars.forEach(async (car) => {
+        await ctx.replyWithHTML(
+          `<b>Avtomobil raqami:</b> ${car.car_number}\n<b>Avtomobil model:</b> ${car.model}\n<b>Avtomobil rangi:</b> ${car.color}\n<b>Avtomobil yili:</b> ${car.year}`,
+        );
+      });
+    }
+  }
+
+  async sendOtp(phone_number: string, OTP: string): Promise<boolean>{
+    const user = await this.botModel.findOne({where:{phone_number}});
+
+    if(!user || !user.status){
+      return false;
+    }
+
+    await this.bot.telegram.sendChatAction(user.user_id, 'typing')
+
+    await this.bot.telegram.sendMessage(user.user_id, "Verify OTP code: " + OTP);
+    return true;
   }
 }

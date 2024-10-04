@@ -4,9 +4,10 @@ import { BotUpdate } from './bot.update';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { Bot } from './models/bot.model';
 import { Address } from './models/address.model';
+import { Car } from './models/car.model';
 
 @Module({
-  imports: [SequelizeModule.forFeature([Bot, Address])],
+  imports: [SequelizeModule.forFeature([Bot, Address, Car])],
   providers: [BotService, BotUpdate],
   exports: [BotService]
 })
