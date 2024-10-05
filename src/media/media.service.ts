@@ -3,22 +3,31 @@ import { CreateMediaDto } from './dto/create-media.dto';
 import { UpdateMediaDto } from './dto/update-media.dto';
 import { InjectModel } from '@nestjs/sequelize';
 import { Media } from './models/media.model';
+import { FileService } from '../file/file.service';
 
 @Injectable()
 export class MediaService {
-  constructor(@InjectModel(Media) private mediaModel: typeof Media) {}
-  create(createMediaDto: CreateMediaDto) {
-    return this.mediaModel.create(createMediaDto);
+  constructor(
+    @InjectModel(Media) private mediaModel: typeof Media,
+    private readonly fileService: FileService
+  ) {}
+  async create(createMediaDto: CreateMediaDto, image: any) {
+    const fileName = await this.fileService.saveFile(image);
+
+    return this.mediaModel.create({
+      ...createMediaDto,
+      photo: fileName,
+    });
   }
 
   findAll() {
-    return this.mediaModel.findAll({include:{all: true}});
+    return this.mediaModel.findAll({ include: { all: true } });
   }
 
   findOne(id: number) {
     return this.mediaModel.findOne({
       where: { id },
-      include: { all: true }
+      include: { all: true },
     });
   }
 
