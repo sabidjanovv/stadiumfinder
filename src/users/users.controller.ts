@@ -14,15 +14,14 @@ import {
 import { UsersService } from "./users.service";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
-import { Response, Request } from 'express';
+import { Response, Request } from "express";
 import { SignInDto } from "./dto/signin.dto";
 import { CookieGetter } from "../decorators/cookieGetter.decorator";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { User } from "./models/user.model";
 import { UserGuard } from "../guards/user.guard";
 import { PhoneUserDto } from "./dto/phone-user.dto";
-
-
+import { VerifyOtpDto } from "./dto/verify-otp.dto";
 
 @ApiTags("Userlar")
 @Controller("users")
@@ -58,10 +57,14 @@ export class UsersController {
   }
 
   @Post("newotp")
-  newOtp(
-    @Body() phoneUserDto:PhoneUserDto) {
-      return this.usersService.newOtp(phoneUserDto)
-    }
+  newOtp(@Body() phoneUserDto: PhoneUserDto) {
+    return this.usersService.newOtp(phoneUserDto);
+  }
+
+  @Post("verifyotp")
+  verifyOtp(@Body() verifyUserDto: VerifyOtpDto) {
+    return this.usersService.verifyOtp(verifyUserDto);
+  }
 
   @ApiOperation({ summary: "User tizimdan chiqishi" })
   @ApiResponse({
@@ -99,7 +102,6 @@ export class UsersController {
     return this.usersService.activateUser(link, res);
   }
 
-  
   @UseGuards(UserGuard)
   @ApiOperation({ summary: "Barcha userlarni olish" })
   @ApiResponse({
@@ -144,4 +146,3 @@ export class UsersController {
     return this.usersService.remove(+id);
   }
 }
-

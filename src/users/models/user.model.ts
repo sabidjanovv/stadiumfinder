@@ -9,6 +9,8 @@ import {
 import { ApiProperty } from "@nestjs/swagger";
 import { UserCard } from "../../user_cards/models/user_card.model";
 import { UserWallet } from "../../user_wallet/models/user_wallet.model";
+import { Stadium } from "../../stadiums/models/stadium.model";
+import { Comment } from "../../comments/models/comment.model";
 
 interface IUserCreationAttr {
   full_name: string;
@@ -80,7 +82,6 @@ export class User extends Model<User, IUserCreationAttr> {
   })
   hashed_password: string;
 
-
   @ApiProperty({
     example: "photo.jpg",
     description: "Photo URL of the user",
@@ -89,7 +90,6 @@ export class User extends Model<User, IUserCreationAttr> {
     type: DataType.STRING,
   })
   photo: string;
-
 
   @Column({
     type: DataType.BOOLEAN,
@@ -113,9 +113,15 @@ export class User extends Model<User, IUserCreationAttr> {
   })
   activation_link: string;
 
-  @HasMany(()=>UserCard)
+  @HasMany(() => UserCard)
   userCards: UserCard[];
 
-  @HasMany(()=>UserWallet)
+  @HasMany(() => UserWallet)
   userWallets: UserWallet[];
+
+  @HasMany(() => Stadium)
+  stadiums: Stadium[];
+
+  @HasMany(() => Comment)
+  comments: Comment[];
 }

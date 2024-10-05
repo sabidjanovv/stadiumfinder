@@ -46,6 +46,11 @@ export class BotUpdate {
     await this.botService.onClickLocation(ctx);
   }
 
+  @On("text")
+  async onText(@Ctx() ctx: Context) {
+    await this.botService.onText(ctx);
+  }
+
   @Command("car")
   async onCar(@Ctx() ctx: Context) {
     await this.botService.onCar(ctx);
@@ -61,14 +66,9 @@ export class BotUpdate {
     await this.botService.showCars(ctx);
   }
 
-  // @On("text")
-  // async onTextCar(@Ctx() ctx: Context) {
-  //   await this.botService.onTextCar(ctx);
-  // }
-
   @On("text")
-  async onText(@Ctx() ctx: Context) {
-    await this.botService.onText(ctx);
+  async onTextCar(@Ctx() ctx: Context) {
+    await this.botService.onTextCar(ctx);
   }
 
   // @On("photo")

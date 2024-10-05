@@ -85,7 +85,7 @@ export class AdminController {
     description: "Barcha adminlar ro'yxati",
     type: [Admin],
   })
-  @UseGuards(AdminSelfGuard)
+  @UseGuards(AdminCreatorGuard)
   @Get()
   findAll() {
     return this.adminService.findAll();
@@ -97,7 +97,7 @@ export class AdminController {
     description: "Get Admin by ID",
     type: Admin,
   })
-  @UseGuards()
+  @UseGuards(AdminSelfGuard)
   @Get(":id")
   async findOne(@Param("id") id: string) {
     return this.adminService.findOne(+id);

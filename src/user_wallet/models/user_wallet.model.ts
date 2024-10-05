@@ -6,8 +6,10 @@ import {
   DataType,
   ForeignKey,
   BelongsTo,
+  HasMany
 } from "sequelize-typescript";
 import { User } from "../../users/models/user.model";
+import { Order } from "../../orders/models/order.model";
 
 interface IUserWallet {
   userId: number;
@@ -48,4 +50,7 @@ export class UserWallet extends Model<UserWallet, IUserWallet> {
     unique: true,
   })
   wallet: number;
+
+  @HasMany(() => Order)
+  orders: Order[];
 }

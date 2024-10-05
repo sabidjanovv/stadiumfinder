@@ -40,12 +40,16 @@ export class AdminSelfGuard implements CanActivate {
       throw new UnauthorizedException("Unauthorized user");
     }
 
-    req.admin = payload;
+    
 
-    if (req.admin.is_creator !== true) {
+    if (payload.is_active !== true) {
       throw new ForbiddenException({
         message: "Sizda bunday huquq yo'q!",
       });
+    }
+
+    if (payload.id !== req.params.id) {
+      throw new ForbiddenException("Sizda bunday huquq yo'q!");
     }
 
     return true;

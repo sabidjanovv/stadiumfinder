@@ -40,14 +40,8 @@ export class AdminCreatorGuard implements CanActivate {
       throw new UnauthorizedException("Unauthorized user");
     }
 
-    req.admin = payload;
-
-    if (req.admin.is_creator !== true) {
-      throw new ForbiddenException("Sizda bunday huquq yo'q");
-    }
-
-    if (req.admin.is_creator == true) {
-      throw new ForbiddenException("Xush kelibsiz SuperAdmin");
+    if (payload.is_creator !== true) {
+      throw new ForbiddenException("Sizda bunday huquq yo'q!");
     }
 
     return true;

@@ -22,7 +22,8 @@ import { PhoneUserDto } from "./dto/phone-user.dto";
 import { BotService } from "../bot/bot.service";
 import { Otp } from "../otp/models/otp.model";
 import { AddMinutesToDate } from "../helpers/addMinutes";
-import { encode } from "../helpers/crypto";
+import { decode, encode } from "../helpers/crypto";
+import { VerifyOtpDto } from "./dto/verify-otp.dto";
 
 @Injectable()
 export class UsersService {
@@ -90,7 +91,7 @@ export class UsersService {
   }
 
   async newOtp(phoneUserDto:PhoneUserDto){
-    const phone_number = phoneUserDto.phone;
+    const phone_number = phoneUserDto.phone_number;
 
     const otp = otpGenerator.generate(4, {
       upperCaseAlphabets: false,
@@ -121,6 +122,56 @@ export class UsersService {
     const encodedData = await encode(JSON.stringify(details))
 
     return {message:"OTP telegramga yuborildi", details:encodedData}
+  }
+
+  async verifyOtp(verifyOtpDto: VerifyOtpDto){
+    const {verification_key, otp, phone_number} = verifyOtpDto;
+    const currentDate = new Date();
+    const decodedData = await decode(verification_key);
+    const details = JSON.parse(decodedData);
+    if(details.phone_number != phone_number){
+      throw new BadRequestException("OTP bu raqamga yuborilmagan")
+    }
+    const resultOtp = await this.otpModel.findOne({
+      where:{id:details.otp_id}
+    });
+    if(!resultOtp){
+      throw new BadRequestException("Bunday OTP mavjud emas")
+    }
+
+    if(resultOtp.verified){
+      throw new BadRequestException("Bu OTP avval tekshirilgan")
+    }
+
+    if(resultOtp.expiration_time < currentDate){
+      throw new BadRequestException("Bu OTPning vaqti tugagan")
+    }
+
+    if(resultOtp.otp !== otp){
+      throw new BadRequestException("OTP mos emas")
+    }
+
+    const user = await this.userModel.update(
+      {
+        is_owner: true,
+      },
+      {
+        where:{phone: phone_number},
+        returning: true,
+      }
+    );
+    if(!user[1][0]){
+      throw new BadRequestException("Bunday foydalanuvchi yo'q")
+    }
+    await this.otpModel.update(
+      { verified: true },
+      { where:{phone_number} }
+    );
+    const response = {
+      message:"Siz owner bo'ldingiz",
+      owner: user[1][0].is_owner
+    }
+    return response;
   }
 
   async signUp(createUserDto: CreateUserDto, res: Response) {

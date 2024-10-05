@@ -1,6 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { Table, Model, Column, DataType, BelongsTo, ForeignKey } from "sequelize-typescript";
+import { Table, Model, Column, DataType, BelongsTo, ForeignKey, HasMany } from "sequelize-typescript";
 import { Region } from "../../region/models/region.model";
+import { Stadium } from "../../stadiums/models/stadium.model";
 
 interface IDistrict {
   name: string;
@@ -36,4 +37,7 @@ export class District extends Model<District, IDistrict> {
   regionId: number;
   @BelongsTo(() => Region)
   region: Region;
+
+  @HasMany(() => Stadium)
+  stadiums: Stadium[];
 }

@@ -192,46 +192,46 @@ export class BotService {
             });
           }
         }
-          const car = await Car.findOne({
-            where: { user_id: userId },
-            order: [["id", "DESC"]],
-          });
-          if (car) {
-            if (car.last_enter == "car_number") {
-              car.car_number = ctx.message.text;
-              car.last_enter = "model";
-              await car.save();
-              await ctx.reply(`Avtomobil modelini kiriting:`, {
-                parse_mode: "HTML",
-                ...Markup.removeKeyboard(),
-              });
-            } else if (car.last_enter == "model") {
-              car.model = ctx.message.text;
-              car.last_enter = "color";
-              await car.save();
-              await ctx.reply(`Avtomobil rangini kiriting:`, {
-                parse_mode: "HTML",
-                ...Markup.removeKeyboard(),
-              });
-            } else if (car.last_enter == "color") {
-              car.color = ctx.message.text;
-              car.last_enter = "year";
-              await car.save();
-              await ctx.reply(`Avtomobil yilini kiriting:`, {
-                parse_mode: "HTML",
-                ...Markup.removeKeyboard(),
-              });
-            } else {
-              car.year = ctx.message.text;
-              car.last_enter = "finish";
-              await car.save();
-              await ctx.reply(`Avtomobil qo'shildi`, {
-                parse_mode: "HTML",
-                ...Markup.removeKeyboard(),
-              });
-            }
+        //   const car = await Car.findOne({
+        //     where: { user_id: userId },
+        //     order: [["id", "DESC"]],
+        //   });
+        //   if (car) {
+        //     if (car.last_enter == "car_number") {
+        //       car.car_number = ctx.message.text;
+        //       car.last_enter = "model";
+        //       await car.save();
+        //       await ctx.reply(`Avtomobil modelini kiriting:`, {
+        //         parse_mode: "HTML",
+        //         ...Markup.removeKeyboard(),
+        //       });
+        //     } else if (car.last_enter == "model") {
+        //       car.model = ctx.message.text;
+        //       car.last_enter = "color";
+        //       await car.save();
+        //       await ctx.reply(`Avtomobil rangini kiriting:`, {
+        //         parse_mode: "HTML",
+        //         ...Markup.removeKeyboard(),
+        //       });
+        //     } else if (car.last_enter == "color") {
+        //       car.color = ctx.message.text;
+        //       car.last_enter = "year";
+        //       await car.save();
+        //       await ctx.reply(`Avtomobil yilini kiriting:`, {
+        //         parse_mode: "HTML",
+        //         ...Markup.removeKeyboard(),
+        //       });
+        //     } else {
+        //       car.year = ctx.message.text;
+        //       car.last_enter = "finish";
+        //       await car.save();
+        //       await ctx.reply(`Avtomobil qo'shildi`, {
+        //         parse_mode: "HTML",
+        //         ...Markup.removeKeyboard(),
+        //       });
+        //     }
 
-        }
+        // }
       }
     }
     
@@ -341,20 +341,61 @@ export class BotService {
     }
   }
 
-  // async onTextCar(ctx: Context){
-  //   if ("text" in ctx.message) {
-  //     const userId = ctx.from.id;
-  //     const user = await this.botModel.findByPk(userId);
-  //     if (!user) {
-  //       await ctx.reply(`Siz avval ro'yxattan o'tmagansiz`, {
-  //         parse_mode: "HTML",
-  //         ...Markup.keyboard([["/start"]])
-  //           .resize()
-  //           .oneTime(),
-  //       });
-  //     } 
-  //   }
-  // }
+  async onTextCar(ctx: Context){
+    if ("text" in ctx.message) {
+      const userId = ctx.from.id;
+      const user = await this.botModel.findByPk(userId);
+      if (!user) {
+        await ctx.reply(`Siz avval ro'yxattan o'tmagansiz`, {
+          parse_mode: "HTML",
+          ...Markup.keyboard([["/start"]])
+            .resize()
+            .oneTime(),
+        });
+      } else {
+        const car = await Car.findOne({
+            where: { user_id: userId },
+            order: [["id", "DESC"]],
+          });
+          if (car) {
+            if (car.last_enter == "car_number") {
+              car.car_number = ctx.message.text;
+              car.last_enter = "model";
+              await car.save();
+              await ctx.reply(`Avtomobil modelini kiriting:`, {
+                parse_mode: "HTML",
+                ...Markup.removeKeyboard(),
+              });
+            } else if (car.last_enter == "model") {
+              car.model = ctx.message.text;
+              car.last_enter = "color";
+              await car.save();
+              await ctx.reply(`Avtomobil rangini kiriting:`, {
+                parse_mode: "HTML",
+                ...Markup.removeKeyboard(),
+              });
+            } else if (car.last_enter == "color") {
+              car.color = ctx.message.text;
+              car.last_enter = "year";
+              await car.save();
+              await ctx.reply(`Avtomobil yilini kiriting:`, {
+                parse_mode: "HTML",
+                ...Markup.removeKeyboard(),
+              });
+            } else {
+              car.year = ctx.message.text;
+              car.last_enter = "finish";
+              await car.save();
+              await ctx.reply(`Avtomobil qo'shildi`, {
+                parse_mode: "HTML",
+                ...Markup.removeKeyboard(),
+              });
+            }
+
+        }
+      }
+    }
+  }
 
   async showCars(ctx: Context) {
     const userId = ctx.from.id;

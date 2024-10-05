@@ -27,6 +27,7 @@ export class AdminService {
       id: admin.id,
       login: admin.login,
       is_active: admin.is_active,
+      is_creator: admin.is_creator,
     };
 
     const [access_token, refresh_token] = await Promise.all([
