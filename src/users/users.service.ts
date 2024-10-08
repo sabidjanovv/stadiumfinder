@@ -4,6 +4,7 @@ import {
   HttpStatus,
   Injectable,
   InternalServerErrorException,
+  ServiceUnavailableException,
   UnauthorizedException,
 } from "@nestjs/common";
 import { CreateUserDto } from "./dto/create-user.dto";
@@ -24,6 +25,7 @@ import { Otp } from "../otp/models/otp.model";
 import { AddMinutesToDate } from "../helpers/addMinutes";
 import { decode, encode } from "../helpers/crypto";
 import { VerifyOtpDto } from "./dto/verify-otp.dto";
+import { SmsService } from "../sms/sms.service";
 
 @Injectable()
 export class UsersService {
@@ -32,7 +34,8 @@ export class UsersService {
     @InjectModel(Otp) private otpModel: typeof Otp,
     private readonly jwtService: JwtService,
     private readonly mailService: MailService,
-    private readonly botService: BotService
+    private readonly botService: BotService,
+    private readonly smsService: SmsService
   ) {}
 
   async generateToken(user: User) {
@@ -90,65 +93,75 @@ export class UsersService {
     }
   }
 
-  async newOtp(phoneUserDto:PhoneUserDto){
+  async newOtp(phoneUserDto: PhoneUserDto) {
     const phone_number = phoneUserDto.phone_number;
 
     const otp = otpGenerator.generate(4, {
       upperCaseAlphabets: false,
       lowerCaseAlphabets: false,
-      specialChars:false
+      specialChars: false,
     });
+    // //BOT
     const isSend = await this.botService.sendOtp(phone_number, otp);
 
-    if(!isSend){
-      throw new BadRequestException("Avval botdan ro'yxattan o'ting")
+    if (!isSend) {
+      throw new BadRequestException("Avval botdan ro'yxattan o'ting");
     }
 
-    const now = new Date()
+    //SMS
+    const response = await this.smsService.sendSms(phone_number, otp)
+
+    if(response.status !== 200){
+      throw new ServiceUnavailableException("OTP yubborishda xatolik")
+    }
+
+    const message = `OTP code has been send to ****` + phone_number.slice(phone_number.length - 4);
+
+    const now = new Date();
     const expiration_time = AddMinutesToDate(now, 5);
-    await this.otpModel.destroy({where:{phone_number}});
+    await this.otpModel.destroy({ where: { phone_number } });
 
     const newOtp = await this.otpModel.create({
-      id:uuid.v4(),
+      id: uuid.v4(),
       otp,
       expiration_time,
       phone_number,
-    })
-    const details ={
+    });
+    const details = {
       timestamp: now,
       phone_number,
       otp_id: newOtp.id,
-    }
-    const encodedData = await encode(JSON.stringify(details))
+    };
+    const encodedData = await encode(JSON.stringify(details));
 
-    return {message:"OTP telegramga yuborildi", details:encodedData}
+    return { message, details: encodedData };
   }
 
-  async verifyOtp(verifyOtpDto: VerifyOtpDto){
-    const {verification_key, otp, phone_number} = verifyOtpDto;
+  async verifyOtp(verifyOtpDto: VerifyOtpDto) {
+    const { verification_key, otp, phone_number } = verifyOtpDto;
     const currentDate = new Date();
     const decodedData = await decode(verification_key);
     const details = JSON.parse(decodedData);
-    if(details.phone_number != phone_number){
-      throw new BadRequestException("OTP bu raqamga yuborilmagan")
+    if (details.phone_number != phone_number) {
+      throw new BadRequestException("OTP bu raqamga yuborilmagan");
     }
     const resultOtp = await this.otpModel.findOne({
-      where:{id:details.otp_id}
+      where: { id: details.otp_id },
     });
-    if(!resultOtp){
-      throw new BadRequestException("Bunday OTP mavjud emas")
+    if (!resultOtp) {
+      throw new BadRequestException("Bunday OTP mavjud emas");
     }
 
-    if(resultOtp.verified){
-      throw new BadRequestException("Bu OTP avval tekshirilgan")
+    if (resultOtp.verified) {
+      throw new BadRequestException("Bu OTP avval tekshirilgan");
     }
 
-    if(resultOtp.expiration_time < currentDate){
-      throw new BadRequestException("Bu OTPning vaqti tugagan")
+    if (resultOtp.expiration_time < currentDate) {
+      throw new BadRequestException("Bu OTPning vaqti tugagan");
     }
 
-    if(resultOtp.otp !== otp){
-      throw new BadRequestException("OTP mos emas")
+    if (resultOtp.otp !== otp) {
+      throw new BadRequestException("OTP mos emas");
     }
 
     const user = await this.userModel.update(
@@ -156,21 +169,18 @@ export class UsersService {
         is_owner: true,
       },
       {
-        where:{phone: phone_number},
+        where: { phone: phone_number },
         returning: true,
       }
     );
-    if(!user[1][0]){
-      throw new BadRequestException("Bunday foydalanuvchi yo'q")
+    if (!user[1][0]) {
+      throw new BadRequestException("Bunday foydalanuvchi yo'q");
     }
-    await this.otpModel.update(
-      { verified: true },
-      { where:{phone_number} }
-    );
+    await this.otpModel.update({ verified: true }, { where: { phone_number } });
     const response = {
-      message:"Siz owner bo'ldingiz",
-      owner: user[1][0].is_owner
-    }
+      message: "Siz owner bo'ldingiz",
+      owner: user[1][0].is_owner,
+    };
     return response;
   }
 
@@ -258,7 +268,7 @@ export class UsersService {
       where: { email },
     });
 
-    if(!user.is_active){
+    if (!user.is_active) {
       throw new UnauthorizedException("Foydalanuvchi faollashtirilmagan");
     }
 
@@ -284,13 +294,13 @@ export class UsersService {
   }
 
   findAll() {
-    return this.userModel.findAll({include:{all:true}});
+    return this.userModel.findAll({ include: { all: true } });
   }
 
   findOne(id: number) {
     return this.userModel.findOne({
       where: { id },
-      include:{all:true}
+      include: { all: true },
     });
   }
 
@@ -306,7 +316,7 @@ export class UsersService {
     const user = await this.userModel.findByPk(id);
 
     if (!user) {
-      return {message: `ID: ${id} does not exist in the database`};
+      return { message: `ID: ${id} does not exist in the database` };
     }
     await this.userModel.destroy({ where: { id } });
     return { message: `ID: ${id} deleted successfully` };

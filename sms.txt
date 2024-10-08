@@ -1,0 +1,1 @@
+curl --location 'notify.eskiz.uz/api/auth/login' --form 'email="sabidjanovv@gmail.com"' --form 'password="1gV9DaCMqHzOm2NopI65uyPHyrjjkz5BDe7tETUd"'

@@ -144,16 +144,16 @@ export class BotService {
     } else {
       await Address.create({
         user_id: userId,
-        last_state:"address_name"
+        last_state: "address_name",
       });
       await ctx.reply(`Manzil nomini kiriting:`, {
         parse_mode: "HTML",
-        ...Markup.removeKeyboard()
+        ...Markup.removeKeyboard(),
       });
     }
   }
 
-  async onText(ctx: Context){
+  async onText(ctx: Context) {
     if ("text" in ctx.message) {
       const userId = ctx.from.id;
       const user = await this.botModel.findByPk(userId);
@@ -166,8 +166,8 @@ export class BotService {
         });
       } else {
         const address = await Address.findOne({
-          where:{user_id:userId},
-          order: [['id', 'DESC']]
+          where: { user_id: userId },
+          order: [["id", "DESC"]],
         });
         if (address) {
           if (address.last_state == "address_name") {
@@ -234,12 +234,10 @@ export class BotService {
         // }
       }
     }
-    
   }
 
   async onLocation(ctx: Context) {
     if ("location" in ctx.message) {
-
       const userId = ctx.from.id;
       const user = await this.botModel.findByPk(userId);
       if (!user) {
@@ -287,30 +285,35 @@ export class BotService {
         await ctx.replyWithHTML(
           `<b>Manzil nomi:</b> ${address.address_name}\n<b>Manzil:</b> ${address.address}`,
           {
-            reply_markup:{
-              inline_keyboard:[[{ text:"Lokatsiyani ko'rish", callback_data:`location_${address.id}`}]]
-            }
+            reply_markup: {
+              inline_keyboard: [
+                [
+                  {
+                    text: "Lokatsiyani ko'rish",
+                    callback_data: `location_${address.id}`,
+                  },
+                ],
+              ],
+            },
           }
         );
       });
     }
   }
 
-  async onClickLocation(ctx: Context){
+  async onClickLocation(ctx: Context) {
     try {
       const actText: String = ctx.callbackQuery["data"];
       const address_id = Number(actText.split("_")[1]);
       const address = await Address.findByPk(address_id);
-        await ctx.replyWithLocation(
-          Number(address.location.split(",")[0]),
-          Number(address.location.split(",")[1])
-        )
-    } catch (error) {
-      
-    }
+      await ctx.replyWithLocation(
+        Number(address.location.split(",")[0]),
+        Number(address.location.split(",")[1])
+      );
+    } catch (error) {}
   }
 
-  async onCar(ctx: Context){
+  async onCar(ctx: Context) {
     await ctx.reply(`Avtomobillarim:`, {
       parse_mode: "HTML",
       ...Markup.keyboard([
@@ -319,7 +322,7 @@ export class BotService {
     });
   }
 
-  async addNewCar(ctx: Context){
+  async addNewCar(ctx: Context) {
     const userId = ctx.from.id;
     const user = await this.botModel.findByPk(userId);
     if (!user) {
@@ -332,7 +335,7 @@ export class BotService {
     } else {
       await Car.create({
         user_id: userId,
-        last_enter:"car_number"
+        last_enter: "car_number",
       });
       await ctx.reply(`Avtomobil raqamini kiriting:`, {
         parse_mode: "HTML",
@@ -341,7 +344,7 @@ export class BotService {
     }
   }
 
-  async onTextCar(ctx: Context){
+  async onTextCar(ctx: Context) {
     if ("text" in ctx.message) {
       const userId = ctx.from.id;
       const user = await this.botModel.findByPk(userId);
@@ -354,44 +357,43 @@ export class BotService {
         });
       } else {
         const car = await Car.findOne({
-            where: { user_id: userId },
-            order: [["id", "DESC"]],
-          });
-          if (car) {
-            if (car.last_enter == "car_number") {
-              car.car_number = ctx.message.text;
-              car.last_enter = "model";
-              await car.save();
-              await ctx.reply(`Avtomobil modelini kiriting:`, {
-                parse_mode: "HTML",
-                ...Markup.removeKeyboard(),
-              });
-            } else if (car.last_enter == "model") {
-              car.model = ctx.message.text;
-              car.last_enter = "color";
-              await car.save();
-              await ctx.reply(`Avtomobil rangini kiriting:`, {
-                parse_mode: "HTML",
-                ...Markup.removeKeyboard(),
-              });
-            } else if (car.last_enter == "color") {
-              car.color = ctx.message.text;
-              car.last_enter = "year";
-              await car.save();
-              await ctx.reply(`Avtomobil yilini kiriting:`, {
-                parse_mode: "HTML",
-                ...Markup.removeKeyboard(),
-              });
-            } else {
-              car.year = ctx.message.text;
-              car.last_enter = "finish";
-              await car.save();
-              await ctx.reply(`Avtomobil qo'shildi`, {
-                parse_mode: "HTML",
-                ...Markup.removeKeyboard(),
-              });
-            }
-
+          where: { user_id: userId },
+          order: [["id", "DESC"]],
+        });
+        if (car) {
+          if (car.last_enter == "car_number") {
+            car.car_number = ctx.message.text;
+            car.last_enter = "model";
+            await car.save();
+            await ctx.reply(`Avtomobil modelini kiriting:`, {
+              parse_mode: "HTML",
+              ...Markup.removeKeyboard(),
+            });
+          } else if (car.last_enter == "model") {
+            car.model = ctx.message.text;
+            car.last_enter = "color";
+            await car.save();
+            await ctx.reply(`Avtomobil rangini kiriting:`, {
+              parse_mode: "HTML",
+              ...Markup.removeKeyboard(),
+            });
+          } else if (car.last_enter == "color") {
+            car.color = ctx.message.text;
+            car.last_enter = "year";
+            await car.save();
+            await ctx.reply(`Avtomobil yilini kiriting:`, {
+              parse_mode: "HTML",
+              ...Markup.removeKeyboard(),
+            });
+          } else {
+            car.year = ctx.message.text;
+            car.last_enter = "finish";
+            await car.save();
+            await ctx.reply(`Avtomobil qo'shildi`, {
+              parse_mode: "HTML",
+              ...Markup.removeKeyboard(),
+            });
+          }
         }
       }
     }
@@ -407,26 +409,42 @@ export class BotService {
           .resize()
           .oneTime(),
       });
-    } else{
+    } else {
       const cars = await Car.findAll({ where: { user_id: userId } });
       cars.forEach(async (car) => {
         await ctx.replyWithHTML(
-          `<b>Avtomobil raqami:</b> ${car.car_number}\n<b>Avtomobil model:</b> ${car.model}\n<b>Avtomobil rangi:</b> ${car.color}\n<b>Avtomobil yili:</b> ${car.year}`,
+          `<b>Avtomobil raqami:</b> ${car.car_number}\n<b>Avtomobil model:</b> ${car.model}\n<b>Avtomobil rangi:</b> ${car.color}\n<b>Avtomobil yili:</b> ${car.year}`
         );
       });
     }
   }
 
-  async sendOtp(phone_number: string, OTP: string): Promise<boolean>{
-    const user = await this.botModel.findOne({where:{phone_number}});
+  async sendOtp(phone_number: string, OTP: string): Promise<boolean> {
+    const user = await this.botModel.findOne({ where: { phone_number } });
 
-    if(!user || !user.status){
+    if (!user || !user.status) {
       return false;
     }
 
-    await this.bot.telegram.sendChatAction(user.user_id, 'typing')
+    await this.bot.telegram.sendChatAction(user.user_id, "typing");
 
-    await this.bot.telegram.sendMessage(user.user_id, "Verify OTP code: " + OTP);
+    await this.bot.telegram.sendMessage(
+      user.user_id,
+      "Verify OTP code: " + OTP
+    );
     return true;
+  }
+
+  async admin_menu(ctx: Context, menu_text = `<b>Admin menyusi</b>`) {
+    try {
+      await ctx.reply(menu_text, {
+        parse_mode: "HTML",
+        ...Markup.keyboard([["Mijozlar", "Ustalar"]])
+          .oneTime()
+          .resize(),
+      });
+    } catch (error) {
+      console.log("Admin menyusida xatolik", error);
+    }
   }
 }

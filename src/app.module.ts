@@ -34,14 +34,16 @@ import { CartModule } from "./cart/cart.module";
 import { Cart } from "./cart/models/cart.model";
 import { StadiumTimesModule } from "./stadium_times/stadium_times.module";
 import { StadiumTime } from "./stadium_times/models/stadium_time.model";
-import { OrdersModule } from './orders/orders.module';
+import { OrdersModule } from "./orders/orders.module";
 import { Order } from "./orders/models/order.model";
-import { ComfortStadiumModule } from './comfort_stadium/comfort_stadium.module';
+import { ComfortStadiumModule } from "./comfort_stadium/comfort_stadium.module";
 import { ComfortStadium } from "./comfort_stadium/models/comfort_stadium.model";
-import { CommentsModule } from './comments/comments.module';
+import { CommentsModule } from "./comments/comments.module";
 import { Comment } from "./comments/models/comment.model";
-import { MediaModule } from './media/media.module';
+import { MediaModule } from "./media/media.module";
 import { Media } from "./media/models/media.model";
+import { SmsModule } from "./sms/sms.module";
+import { SmsService } from "./sms/sms.service";
 
 @Module({
   imports: [
@@ -107,8 +109,9 @@ import { Media } from "./media/models/media.model";
     ComfortStadiumModule,
     CommentsModule,
     MediaModule,
+    SmsModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [SmsService],
 })
 export class AppModule {}
