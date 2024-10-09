@@ -30,6 +30,8 @@ export class SmsService {
       return { status: 500 };
     }
   }
+
+  
   async refreshToken(){
     var config = {
       method: "patch",
@@ -38,13 +40,19 @@ export class SmsService {
       headers: {},
     };
 
-    axios(config)
-      .then(function (response) {
-        console.log(JSON.stringify(response.data));
-      })
-      .catch(function (error) {
-        console.log(error);
-      });
+    
+    try {
+      const response = await axios(config);
+      console.log("Token refreshed:", response.data);
+      return response.data;
+    } catch (error) {
+      console.log(
+        "Error refreshing token:",
+        error.response?.data || error.message
+      );
+      return { status: 500, message: "Token yangilashda xatolik yuz berdi." };
+    }
+
 
   }
 }
